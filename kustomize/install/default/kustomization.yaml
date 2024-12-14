@@ -34,4 +34,4 @@ patches:
           - name: operator
             env:
             - name: PGO_FEATURE_GATES
-              value: ""
+              value: "AutoGrowVolumes=true"

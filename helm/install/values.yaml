@@ -49,7 +49,7 @@ pgoControllerLeaseName: cpk-leader-election-lease
 
 # replicas sets the number of PGO instances.
 # Warning: This should only be greater than 1 if pgoControllerLeaseName is set!
-replicas: 1
+replicas: 2
 
 # imagePullSecretNames is a list of secret names to use for pulling controller images.
 # More info: https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
