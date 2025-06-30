@@ -7,6 +7,7 @@ resources:
 - ca-issuer.yaml
 - cert.yaml
 - cert-repl.yaml
+- s3-backup-secret.yaml
 - postgres.yaml
 - lb.yaml
 - lb-pgbouncer.yaml

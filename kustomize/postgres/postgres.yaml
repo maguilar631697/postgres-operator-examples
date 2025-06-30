@@ -69,6 +69,9 @@ spec:
               postgres-operator.crunchydata.com/instance-set: instance
   backups:
     pgbackrest:
+      configuration:
+      - secret:
+          name: hippo-s3-backup-secret
       repoHost:
         topologySpreadConstraints:
         - maxSkew: 1
@@ -91,9 +94,16 @@ spec:
                 storage: 1Gi
               limits:
                 storage: 25Gi
+      - name: repo2
+        schedules:
+          full: "0 2 * * 0"
+          differential: "0 2 * * 1-6"
       global:
         repo1-retention-full: "14"
         repo1-retention-full-type: time
+        repo2-retention-full: "30"
+        repo2-retention-full-type: time
+        repo2-path: "/hippo-cluster"
       # manual:
       #   repoName: repo1
       #   options:
