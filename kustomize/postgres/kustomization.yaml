@@ -4,6 +4,9 @@ kind: Kustomization
 namespace: postgres-operator
 
 resources:
+- ca-issuer.yaml
 - cert.yaml
 - cert-repl.yaml
 - postgres.yaml
+- lb.yaml
+- lb-pgbouncer.yaml

@@ -3,7 +3,7 @@ kind: PostgresCluster
 metadata:
   name: hippo
 spec:
-  postgresVersion: 16
+  postgresVersion: 17
   customReplicationTLSSecret:
     name: hippo-repl-tls
   customTLSSecret:
@@ -23,10 +23,14 @@ spec:
       postgresql:
         parameters:
           synchronous_commit: 'on'
-          max_parallel_workers: 2
-          max_worker_processes: 2
-          shared_buffers: 1GB
-          work_mem: 2MB
+          max_parallel_workers: 4
+          max_worker_processes: 8
+          shared_buffers: 2GB
+          work_mem: 4MB
+          maintenance_work_mem: 256MB
+          effective_cache_size: 6GB
+          random_page_cost: 1.1
+          effective_io_concurrency: 200
         pg_hba:
           - "hostssl all all all scram-sha-256"
   instances:
@@ -104,17 +108,19 @@ spec:
 
   proxy:
     pgBouncer:
-      # customTLSSecret:
-      #     name: hippo-tls
-      # config:
-      #   databases:
-      #     '*': host=hippo-primary port=5432 #change this port if you're not using default 
-      #   global:
-      #     pool_mode: transaction
-      #     query_wait_timeout: "240" 
-      #     default_pool_size: "100"
-      #     max_client_conn: "1000" #change depending on your app requirement
-      #     # server_tls_sslmode: verify-ca 
+      customTLSSecret:
+        name: hippo-tls
+      config:
+        databases:
+          '*': host=hippo-primary port=5432
+        global:
+          pool_mode: transaction
+          query_wait_timeout: "240"
+          default_pool_size: "25"
+          max_client_conn: "200"
+          server_round_robin: "1"
+          server_tls_sslmode: verify-ca
+          client_tls_sslmode: require
       replicas: 3
       affinity:
         podAntiAffinity:
