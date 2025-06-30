@@ -16,6 +16,11 @@ spec:
     - name: llama
       databases:
         - zoo
+    - name: pseadmin
+      databases:
+        - zoo
+        - postgres
+      options: 'SUPERUSER CREATEDB CREATEROLE REPLICATION'
   patroni:
     dynamicConfiguration:
       failsafe_mode: true
