@@ -203,6 +203,13 @@ kubectl get pod -n postgres-operator -l postgres-operator.crunchydata.com/pgback
 
 # Check certificates
 kubectl get certificates -n postgres-operator
+
+# Check LoadBalancer services
+kubectl get services -n postgres-operator -o wide
+
+# Verify PostgreSQL 17 version
+export PGPASSWORD=$(kubectl get secret hippo-pguser-rhino -n postgres-operator -o jsonpath='{.data.password}' | base64 -d)
+psql -h $(kubectl get service postgres-cluster-pgbouncer-loadbalancer -n postgres-operator -o jsonpath='{.status.loadBalancer.ingress[0].ip}') -U rhino -d zoo -c "SELECT version();"
 ```
 
 ### Manual Backup
@@ -281,7 +288,7 @@ kubectl describe service postgres-cluster-loadbalancer -n postgres-operator
 kubectl get ciliumpools
 ```
 
-## 🔄 PostgreSQL 17 Features
+## 🔄 PostgreSQL 17 Features & Optimizations
 
 ### **New in PostgreSQL 17**
 - **Improved Performance**: Enhanced query optimization and execution
@@ -289,8 +296,15 @@ kubectl get ciliumpools
 - **Enhanced Security**: Stronger authentication and encryption options
 - **Monitoring Improvements**: Better metrics and observability
 
+### **Performance Optimizations Applied**
+- **Parallel Processing**: 4 parallel workers, 8 total worker processes
+- **Memory Optimization**: 2GB shared_buffers, 4MB work_mem, 256MB maintenance_work_mem
+- **SSD Tuning**: random_page_cost=1.1, effective_io_concurrency=200
+- **Cache Awareness**: 6GB effective_cache_size for better query planning
+- **Connection Pooling**: Transaction-level pooling with optimized connection limits
+
 ### **Operator Compatibility**
-- **PGO 5.8.2**: Fully supports PostgreSQL 17
+- **PGO 5.8.2**: Fully supports PostgreSQL 17 with all optimizations
 - **Automatic Updates**: Operator manages PostgreSQL 17 lifecycle
 - **Extension Support**: All major PostgreSQL 17 extensions available
 
@@ -331,8 +345,17 @@ kubectl get ciliumpools
 kubectl port-forward service/hippo-pgbouncer 5432:5432 -n postgres-operator
 
 # Connect and check metrics
-psql postgresql://rhino:PASSWORD@localhost:5432/zoo \
-  -c "SELECT * FROM pg_stat_activity;"
+export PGPASSWORD=$(kubectl get secret hippo-pguser-rhino -n postgres-operator -o jsonpath='{.data.password}' | base64 -d)
+psql -h localhost -U rhino -d zoo -c "SELECT * FROM pg_stat_activity;"
+
+# Check parallel worker usage
+psql -h localhost -U rhino -d zoo -c "SELECT * FROM pg_stat_activity WHERE query LIKE '%Parallel%';"
+
+# Verify optimization settings
+psql -h localhost -U rhino -d zoo -c "SHOW shared_buffers; SHOW max_parallel_workers; SHOW effective_cache_size;"
+
+# Check pgBouncer stats
+psql -h localhost -U rhino -p 5432 pgbouncer -c "SHOW STATS;"
 ```
 
 ---
